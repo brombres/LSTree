@@ -1,0 +1,165 @@
+#===============================================================================
+# LSTree.rogue
+# May 22, 2020
+#===============================================================================
+$define VERSION "1.1"
+$define DATE    "May 23, 2020"
+
+$requireRogue "1.7.1"
+
+$define INDENT 2
+
+LSTree( System.command_line_arguments.cloned )
+
+class LSTree
+  PROPERTIES
+    ignore_hidden    = true
+    show_sizes       = true
+    exclude_mode     = false
+    exclude_patterns = String[]
+    excluded         = String[]
+
+    indent        = 0
+
+  METHODS
+    method init( args:String[] )
+      forEach (arg in rewriter=args.rewriter)
+        if (arg.begins_with("-"))
+          local name = arg.before_first( '=' )
+          local param = arg.after_first( '=' )
+          which (name)
+            case "--help"
+              print_usage
+              return
+            case "--exclude"
+              if (param.count) exclude_patterns.add( param )
+              else             exclude_mode = true
+            case "--hidden", "-a"
+              ignore_hidden = false
+            case "--no-sizes", "--nosz"
+              show_sizes = false
+            others
+              print_usage
+              throw Error( "Unsupported option: " + arg )
+          endWhich
+        else
+          if (exclude_mode) exclude_patterns.add( arg )
+          else              rewriter.write( File.without_trailing_separator(arg) )
+        endIf
+      endForEach
+
+      indent = INDENT
+      if (args.is_empty) args.add( "." )
+      forEach (filepath in args)
+        filepath = File.expand_filepath( filepath )
+        # Tailor the exclude patterns to fit the starting folder
+        excluded.clear
+        forEach (pattern in exclude_patterns)
+          excluded.add( File.ensure_ends_with_separator(filepath) + pattern )
+        endForEach
+
+        println File.absolute_filepath( filepath )
+        local total_size = display( filepath )
+        if (show_sizes) println "($)" (byte_count_to_string(total_size))
+      endForEach
+
+    method print_usage
+      println "LSTree version " + VERSION
+      println DATE
+      println @|
+               |USAGE
+               |  lst [options] [folder-path]
+               |
+               |OPTIONS
+               |  --exclude, --exclude=pattern
+               |    Without an argument, any wildcard filepaths that follow are automatically
+               |    used as exclusion patterns. With an argument, only the specified pattern is
+               |    excluded. Example: "lst --hidden --exclude=.git". See also WILDCARD
+               |    PATTERNS, below.
+               |
+               |  --help
+               |    Show this help text.
+               |
+               |  --hidden, -a
+               |    Show hidden files.
+               |
+               |  --no-sizes, --nosz
+               |    Do not show file sizes.
+               |
+               |WILDCARD PATTERNS
+               |  Put patterns in quotes to ensure that LSTree's non-standard wildcard patterns
+               |  are correctly processed. By example:
+               |    "*.rogue"     # matches files in the current folder ending with ".rogue"
+               |    "**/*.rogue"  # matches files in subfolders but not in the current folder
+               |    "***/*.rogue" # matches files in subfolders or in the current folder.
+               |  Finally, '?' can be used to match any single character.
+
+    method display( folder:String )->Int64
+      local total_size : Real64
+
+      local listing = String[]
+
+      if (File.exists(folder) and not File.is_folder(folder))
+        listing.add( File.filename(folder) )
+      else
+        local pattern = ""
+        while (folder.contains('*') or folder.contains('?'))
+          if (pattern.count) pattern = "$/$" (File.filename(folder),pattern)
+          else               pattern = File.filename( folder )
+          folder = File.folder( folder )
+        endWhile
+        if (folder == "") folder = "."
+        if (pattern == "") pattern = "*"
+
+        listing = File.listing( folder, pattern, &=ignore_hidden, &omit_path )
+      endIf
+
+      local max_len = 0
+      max_len = max_len.or_larger( (forEach in listing).count )
+      max_len += 2
+
+      forEach (filename in listing)
+        local filepath = "$/$" (folder,filename)
+        contingent
+          necessary (not File.matches_wildcard_pattern(filepath,forEach in excluded))
+
+          loop (indent-INDENT) print ' '
+          print '-'
+          loop (INDENT-1) print ' '
+          if (File.is_folder(filepath))
+            println "$/" (filename)
+            indent += INDENT
+            local folder_size = display( filepath )
+            if (show_sizes)
+              loop (indent-2) print ' '
+              println "($)" (byte_count_to_string(folder_size))
+            endIf
+            indent -= INDENT
+            total_size += folder_size
+          else
+            local size = File.size( filepath )
+            print filename
+            if (show_sizes)
+              loop (max_len - filename.count) print ' '
+              print (("[$]" (byte_count_to_string(size))).right_justified(7))
+            endIf
+            println
+            total_size += size
+          endIf
+        endContingent
+      endForEach
+      return total_size
+
+    method byte_count_to_string( n:Real64 )->String
+      local size_suffix = ' '
+      forEach (suffix in "KMGTP")
+        if (n >= 1024) size_suffix = suffix
+        else           escapeForEach
+        n /= 1024
+      endForEach
+      local result : String
+      if (n <= 99.5 and size_suffix != ' ') result = n.format( "1.1" )
+      else                                  result = n.format( "1.0" )
+      if (size_suffix != ' ') result += size_suffix
+      return result
+endClass
