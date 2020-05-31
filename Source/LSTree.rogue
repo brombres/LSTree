@@ -25,13 +25,15 @@ class LSTree
     method init( args:String[] )
       local depth = 0 # 0 is no restriction, 1=1 level, etc.
 
+      transform_arg_pair( args, "-d", "--depth" )
+
       forEach (arg in rewriter=args.rewriter)
         if (arg.begins_with("-"))
           local name = arg.before_first( '=' )
           local param = arg.after_first( '=' )
           which (name)
-            case "--depth"
-              depth = param->Int32
+            case "--depth", "-d"
+              depth = param->Int32.clamped_low( 0 )
             case "--help", "-?"
               print_usage
               return
@@ -40,7 +42,7 @@ class LSTree
               else             exclude_mode = true
             case "--hidden", "-a"
               ignore_hidden = false
-            case "--no-sizes", "--nosz"
+            case "--no-sizes", "--nosz", "-n"
               show_sizes = false
             others
               print_usage
@@ -67,6 +69,17 @@ class LSTree
         if (show_sizes) println "($)" (byte_count_to_string(total_size))
       endForEach
 
+    method transform_arg_pair( args:String[], old:String, new:String )
+      local index = args.locate( old )
+      if (not index) return
+      block index = index.value
+        if (index+1 >= args.count)
+          throw Error( "Expected arg after " + old )
+        endIf
+        args.remove_at( index )
+        args[ index ] = "$=$" (new,args[index])
+      endBlock
+
     method print_usage
       println "LSTree version " + VERSION
       println DATE
@@ -75,7 +88,7 @@ class LSTree
                |  lst [options] [folder-path]
                |
                |OPTIONS
-               |  --depth=<N>
+               |  --depth=<N>, -d <N>
                |    --depth=0 # No depth limitation (default)
                |    --depth=1 # Limit the listing to a single level
                |    --depth=2 # Limit the listing to two levels, etc.
@@ -92,7 +105,7 @@ class LSTree
                |  --hidden, -a
                |    Show hidden files.
                |
-               |  --no-sizes, --nosz
+               |  --no-sizes, --nosz, -n
                |    Do not show file sizes.
                |
                |WILDCARD PATTERNS

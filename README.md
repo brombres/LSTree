@@ -60,13 +60,13 @@ Command line folder listing with indented tree-style display.
 
 ### Options
 
-Option             | Description
--------------------|-------------------------------------
-`--depth=<N>`      | Limit the depth recursion to 1 or more levels (0 is unlimited).
+Option                             | Description
+-----------------------------------|-------------------------------------
+`--depth=<N>`<br>`-d <N>`          | Limit the depth recursion to 1 or more levels (0 is unlimited).
 `--exclude`<br>`--exclude=pattern` | Without an argument, any wildcard filepaths that follow are automatically used as exclusion patterns. With an argument, only the specified pattern is excluded. Example: `lst --hidden --exclude=.git`. See also WILDCARD PATTERNS, below.
 `--help`                           | Show this help text.
 `--hidden`<br>`-a`                 | Show hidden files.
-`--no-sizes`<br>`--nosz`           | Do not show file sizes.
+`--no-sizes`<br>`--nosz`<br>`-n`   | Do not show file sizes.
 
 ### Wildcard Patterns
 
