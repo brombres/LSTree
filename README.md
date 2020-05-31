@@ -2,7 +2,7 @@
 Command line folder listing with indented tree-style display.
 
 ## Version
-- v1.1 - May 31, 2020
+- v1.2 - May 31, 2020
 - macOS, Linux, Windows
 - [MIT License](LICENSE)
 - By Abe Pralle
