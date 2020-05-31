@@ -23,12 +23,16 @@ class LSTree
 
   METHODS
     method init( args:String[] )
+      local depth = 0 # 0 is no restriction, 1=1 level, etc.
+
       forEach (arg in rewriter=args.rewriter)
         if (arg.begins_with("-"))
           local name = arg.before_first( '=' )
           local param = arg.after_first( '=' )
           which (name)
-            case "--help"
+            case "--depth"
+              depth = param->Int32
+            case "--help", "-?"
               print_usage
               return
             case "--exclude"
@@ -59,7 +63,7 @@ class LSTree
         endForEach
 
         println File.absolute_filepath( filepath )
-        local total_size = display( filepath )
+        local total_size = display( filepath, depth )
         if (show_sizes) println "($)" (byte_count_to_string(total_size))
       endForEach
 
@@ -71,6 +75,11 @@ class LSTree
                |  lst [options] [folder-path]
                |
                |OPTIONS
+               |  --depth=<N>
+               |    --depth=0 # No depth limitation (default)
+               |    --depth=1 # Limit the listing to a single level
+               |    --depth=2 # Limit the listing to two levels, etc.
+               |
                |  --exclude, --exclude=pattern
                |    Without an argument, any wildcard filepaths that follow are automatically
                |    used as exclusion patterns. With an argument, only the specified pattern is
@@ -94,7 +103,7 @@ class LSTree
                |    "***/*.rogue" # matches files in subfolders or in the current folder.
                |  Finally, '?' can be used to match any single character.
 
-    method display( folder:String )->Int64
+    method display( folder:String, depth:Int32 )->Int64
       local total_size : Real64
 
       local listing = String[]
@@ -123,32 +132,52 @@ class LSTree
         contingent
           necessary (not File.matches_wildcard_pattern(filepath,forEach in excluded))
 
-          loop (indent-INDENT) print ' '
-          print '-'
-          loop (INDENT-1) print ' '
           if (File.is_folder(filepath))
-            println "$/" (filename)
-            indent += INDENT
-            local folder_size = display( filepath )
-            if (show_sizes)
-              loop (indent-2) print ' '
-              println "($)" (byte_count_to_string(folder_size))
+            if (depth == 1)
+              # At our depth limit
+              print_hypen
+              print( filename ).print( "/" ).flush
+              if (not show_sizes) println; nextIteration
+              loop (max_len - (filename.count+1)) print ' '
+              local folder_size = display( filepath, -1 )
+              println (("[$]" (byte_count_to_string(folder_size))).right_justified(7))
+              total_size += folder_size
+            elseIf (depth < 0)
+              # Beyond our depth limit - collect sizes but don't print anything
+              total_size += display( filepath, depth-1 )
+            else
+              print_hypen
+              println "$/" (filename)
+              indent += INDENT
+              local folder_size = display( filepath, ?:{depth:depth-1||0} )
+              if (show_sizes)
+                loop (indent-2) print ' '
+                println "($)" (byte_count_to_string(folder_size))
+              endIf
+              indent -= INDENT
+              total_size += folder_size
             endIf
-            indent -= INDENT
-            total_size += folder_size
           else
             local size = File.size( filepath )
-            print filename
-            if (show_sizes)
-              loop (max_len - filename.count) print ' '
-              print (("[$]" (byte_count_to_string(size))).right_justified(7))
-            endIf
-            println
             total_size += size
+            if (depth >= 0)
+              print_hypen
+              print filename
+              if (show_sizes)
+                loop (max_len - filename.count) print ' '
+                print (("[$]" (byte_count_to_string(size))).right_justified(7))
+              endIf
+              println
+            endIf
           endIf
         endContingent
       endForEach
       return total_size
+
+    method print_hypen
+      loop (indent-INDENT) print ' '
+      print '-'
+      loop (INDENT-1) print ' '
 
     method byte_count_to_string( n:Real64 )->String
       local size_suffix = ' '
