@@ -58,15 +58,20 @@ class LSTree
       if (args.is_empty) args.add( "." )
       forEach (filepath in args)
         filepath = File.expand_filepath( filepath )
+
         # Tailor the exclude patterns to fit the starting folder
         excluded.clear
         forEach (pattern in exclude_patterns)
           excluded.add( File.ensure_ends_with_separator(filepath) + pattern )
         endForEach
 
-        println File.absolute_filepath( filepath )
-        local total_size = display( filepath, depth )
-        if (show_sizes) println "($)" (byte_count_to_string(total_size))
+        if (File.is_folder(filepath))
+          println File.absolute_filepath( filepath )
+          local total_size = display( filepath, depth )
+          if (show_sizes) println "($)" (byte_count_to_string(total_size))
+        else
+          display( filepath, depth )
+        endIf
       endForEach
 
     method transform_arg_pair( args:String[], old:String, new:String )
@@ -123,6 +128,7 @@ class LSTree
 
       if (File.exists(folder) and not File.is_folder(folder))
         listing.add( File.filename(folder) )
+        folder = File.folder( folder )
       else
         local pattern = ""
         while (folder.contains('*') or folder.contains('?'))
@@ -141,7 +147,7 @@ class LSTree
       max_len += 2
 
       forEach (filename in listing)
-        local filepath = "$/$" (folder,filename)
+        local filepath = which{ folder.count:"$/$" (folder,filename) || filename }
         contingent
           necessary (not File.matches_wildcard_pattern(filepath,forEach in excluded))
 
