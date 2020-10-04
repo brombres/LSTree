@@ -7,9 +7,11 @@ $define DATE    "June 1, 2020"
 
 $requireRogue "1.7.1"
 
+uses Utility/CommandLineParser
+
 $define INDENT 2
 
-LSTree( System.command_line_arguments.cloned )
+LSTree( System.command_line_arguments )
 
 class LSTree
   PROPERTIES
@@ -23,36 +25,59 @@ class LSTree
 
   METHODS
     method init( args:String[] )
-      local depth = 0 # 0 is no restriction, 1=1 level, etc.
+      local command = CommandLineParser().
+      [
+        option( "--depth=", &alias="-d" )
+        option( "--help",   &aliases=["-h","-?"] )
+        option( "--exclude=",
+          function( parser:CommandLineParser )
+            if (parser.arg.contains("="))
+              parser.command.ensure_list( "excluded" ).add( parser.arg.after_first('=') )
+            else
+              parser.cur_group = "excluded"
+            endIf
+          endFunction
+        )
+        option( "--hidden", &alias="-a" )
+        option( "--no-sizes", &aliases=["--nosz","-n"] )
+        on_unknown(
+          function (parser:CommandLineParser) with (print_usage=(this=>print_usage))
+            local arg = parser.arg.after_first( '-' )
+            local n = 0
+            local found_number = false
+            while (arg.count and arg[0].is_number)
+              found_number = true
+              n = n * 10 + arg[0].to_number
+              arg = arg.rightmost( -1 )
+            endWhile
 
-      transform_arg_pair( args, "-d", "--depth" )
+            if (not found_number)
+              Console.error.println( "=" * 80 )
+              Console.error.println( "ERROR: " + UnrecognizedOptionError(parser.arg) ).println
+              Console.error.println( "=" * 80 )
+              print_usage()
+              System.exit 1
+            endIf
 
+            parser._handle( "--depth=$"(n) )
+            if (arg.count) parser._handle( "-" + arg )
+          endFunction
+        )
+      ].parse( args )
+
+      if (command//options//help)
+        print_usage
+        return
+      endIf
+
+      local depth = command//options//depth->Int32 # 0 is no restriction, 1=1 level, etc.
+      local exclude_patterns = command//excluded.to_list<<String>>
+      args = command//args.to_list<<String>>
       forEach (arg in rewriter=args.rewriter)
-        if (arg.begins_with("-"))
-          local name = arg.before_first( '=' )
-          local param = arg.after_first( '=' )
-          which (name)
-            case "--depth", "-d"
-              depth = param->Int32.clamped_low( 0 )
-            case "--help", "-?"
-              print_usage
-              return
-            case "--exclude"
-              if (param.count) exclude_patterns.add( param )
-              else             exclude_mode = true
-            case "--hidden", "-a"
-              ignore_hidden = false
-            case "--no-sizes", "--nosz", "-n"
-              show_sizes = false
-            others
-              print_usage
-              throw Error( "Unsupported option: " + arg )
-          endWhich
-        else
-          if (exclude_mode) exclude_patterns.add( arg )
-          else              rewriter.write( File.without_trailing_separator(arg) )
-        endIf
+        rewriter.write( File.without_trailing_separator(arg) )
       endForEach
+      ignore_hidden = not command//options//hidden->Logical
+      show_sizes = not command//options//show_sizes->Logical
 
       indent = INDENT
       if (args.is_empty) args.add( "." )
@@ -75,17 +100,6 @@ class LSTree
       endForEach
 
       if (show_sizes) println "($)" (byte_count_to_string(total_size))
-
-    method transform_arg_pair( args:String[], old:String, new:String )
-      local index = args.locate( old )
-      if (not index) return
-      block index = index.value
-        if (index+1 >= args.count)
-          throw Error( "Expected arg after " + old )
-        endIf
-        args.remove_at( index )
-        args[ index ] = "$=$" (new,args[index])
-      endBlock
 
     method print_usage
       println "LSTree version " + VERSION
