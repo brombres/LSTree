@@ -70,10 +70,10 @@ Option                             | Description
 
 ### Wildcard Patterns
 
-    Put patterns in quotes to ensure that LSTree's non-standard wildcard patterns are correctly processed. By example:
-    "*.rogue"     # matches files in the current folder ending with ".rogue"
-    "**/*.rogue"  # matches files in subfolders but not in the current folder
-    "***/*.rogue" # matches files in subfolders or in the current folder.
+    Put patterns in quotes to ensure that LSTree's non-standard wildcard pattern '**/' is correctly processed. By example:
+    "*.rogue"      # matches files in the current folder ending with ".rogue"
+    "**/*.rogue"   # matches files in subfolders or in the current folder.
+    "*/**/*.rogue" # matches files in subfolders but not in the current folder
 
 Finally, `?` can be used to match any single character.
 
