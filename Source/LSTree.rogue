@@ -5,7 +5,7 @@
 $define VERSION "1.2.1"
 $define DATE    "June 1, 2020"
 
-$requireRogue "1.7.1"
+$requireRogue "1.7.7"
 
 uses Utility/CommandLineParser
 
