@@ -56,6 +56,7 @@ class LSTree
 
       indent = INDENT
       if (args.is_empty) args.add( "." )
+      local total_size : Int64
       forEach (filepath in args)
         filepath = File.expand_filepath( filepath )
 
@@ -67,12 +68,13 @@ class LSTree
 
         if (File.is_folder(filepath))
           println File.absolute_filepath( filepath )
-          local total_size = display( filepath, depth )
-          if (show_sizes) println "($)" (byte_count_to_string(total_size))
+          total_size += display( filepath, depth )
         else
           display( filepath, depth )
         endIf
       endForEach
+
+      if (show_sizes) println "($)" (byte_count_to_string(total_size))
 
     method transform_arg_pair( args:String[], old:String, new:String )
       local index = args.locate( old )
