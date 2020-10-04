@@ -58,7 +58,8 @@ routine rogo_default
   rogo_install_launcher  # Uncomment to automatically install a /usr/local/bin/lstree launcher
 endRoutine
 
-routine rogo_build
+routine rogo_build( dev="":String )
+  local opt = which{ dev=="dev":"" || System.is_windows:" /O2 " || " -O3" }
   block exe_filepath
     if (File.is_newer_than(SRC_FILEPATH,exe_filepath))
       if (File.is_newer_than(SRC_FILEPATH,CPP_FILEPATH))
@@ -66,12 +67,12 @@ routine rogo_build
       endIf
       if (System.is_windows)
         local libs = ""
-        local cc = "cl /O2 /EHsc /nologo $ /Fe$ $" (CPP_FILEPATH,exe_filepath,libs)
+        local cc = "cl$ /EHsc /nologo $ /Fe$ $" (opt,CPP_FILEPATH,exe_filepath,libs)
         #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
         execute cc
       else
         local libs = ""
-        local cc = "c++ -O3 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
+        local cc = "c++$ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (opt,CPP_FILEPATH,exe_filepath,libs)
         execute cc
       endIf
     endIf
