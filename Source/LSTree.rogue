@@ -29,7 +29,7 @@ class LSTree
       [
         option( "--depth=", &alias="-d" )
         option( "--help",   &aliases=["-h","-?"] )
-        option( "--exclude=",
+        option( "--exclude",
           function( parser:CommandLineParser )
             if (parser.arg.contains("="))
               parser.command.ensure_list( "excluded" ).add( parser.arg.after_first('=') )
@@ -38,6 +38,7 @@ class LSTree
             endIf
           endFunction
         )
+        alias( "-x", "--exclude", &require_value )
         option( "--hidden", &alias="-a" )
         option( "--no-sizes", &aliases=["--nosz","-n"] )
         on_unknown(
