@@ -77,7 +77,7 @@ class LSTree
         rewriter.write( File.without_trailing_separator(arg) )
       endForEach
       ignore_hidden = not command//options//hidden->Logical
-      show_sizes = not command//options//show_sizes->Logical
+      show_sizes = not command//options["no-sizes"]->Logical
 
       indent = INDENT
       if (args.is_empty) args.add( "." )
