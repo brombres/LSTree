@@ -11,7 +11,16 @@ uses Utility/CommandLineParser
 
 $define INDENT 2
 
-LSTree( System.command_line_arguments )
+try
+  LSTree( System.command_line_arguments )
+catch (error:Error)
+  Console.error.println( "=" * 80 )
+  Console.error.println( "ERROR: " + error )
+  Console.error.println
+  Console.error.println "Run `lst -?` for help."
+  Console.error.println( "=" * 80 )
+  System.exit 1
+endTry
 
 class LSTree
   PROPERTIES
@@ -52,11 +61,7 @@ class LSTree
             endWhile
 
             if (not found_number)
-              Console.error.println( "=" * 80 )
-              Console.error.println( "ERROR: " + UnrecognizedOptionError(parser.arg) ).println
-              Console.error.println( "=" * 80 )
-              print_usage()
-              System.exit 1
+              throw UnrecognizedOptionError( parser.arg )
             endIf
 
             parser._handle( "--depth=$"(n) )
