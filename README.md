@@ -1,17 +1,21 @@
 # LSTree
 Command line folder listing with indented tree-style display.
 
-## Version
-- v1.2.1 - June 1, 2020
-- macOS, Linux, Windows
-- [MIT License](LICENSE)
-- By Abe Pralle
+Summary   | Current Release
+----------|-----------------------
+Version   | 1.2.1
+Date      | June 1, 2020
+Platforms | macOS, Linux (Ubuntu+), Windows
+License   | [MIT License](LICENSE)
+Author    | Abe Pralle
 
-## Installation
-1. Install the [Rogue](https://github.com/AbePralle/Rogue) language.
-2. Run `rogo` in this folder to compile **LSTree**.
-    - On macOS and Linux a launcher will be created here: `/usr/local/bin/lst`.
-    - On Windows the build process will print the necessary folder to add to the system PATH environment variable.
+## New Installation
+
+1. Install [morlock.sh](https://morlock.sh)
+2. `morlock install abepralle/lstree`
+
+## Updating Existing Installation
+`morlock update lstree`
 
 ## Examples
 
@@ -37,7 +41,7 @@ Command line folder listing with indented tree-style display.
 
 ### lst --no-sizes
 
-    ~/Projects/Tools/LSTree> lst --no-sizes
+    ~/Projects/Tools/LSTree> lst -n
     /Users/abe/Projects/Tools/LSTree
     - Build/
       - lst.exe
@@ -54,26 +58,40 @@ Command line folder listing with indented tree-style display.
 
 ## Usage
 
-### Syntax
+    USAGE
+      lst [OPTIONS] [folder-path]
 
-    lst [options] [folder-path]
+    OPTIONS
+      -0, -1, -2, ...
+        Aliases for `--depth=0` ...
 
-### Options
+      --depth=<N>, -d <N>
+        --depth=0 # No depth limitation (default)
+        --depth=1 # Limit the listing to a single level
+        --depth=2 # Limit the listing to two levels, etc.
 
-Option                             | Description
------------------------------------|-------------------------------------
-`--depth=<N>`<br>`-d <N>`          | Limit the depth recursion to 1 or more levels (0 is unlimited).
-`--exclude`<br>`--exclude=pattern` | Without an argument, any wildcard filepaths that follow are automatically used as exclusion patterns. With an argument, only the specified pattern is excluded. Example: `lst --hidden --exclude=.git`. See also WILDCARD PATTERNS, below.
-`--help`                           | Show this help text.
-`--hidden`<br>`-a`                 | Show hidden files.
-`--no-sizes`<br>`--nosz`<br>`-n`   | Do not show file sizes.
+      --exclude, --exclude=pattern
+        Without an argument, any wildcard filepaths that follow are automatically
+        used as exclusion patterns. With an argument, only the specified pattern is
+        excluded. Example: "lst --hidden --exclude=.git". See also WILDCARD
+        PATTERNS, below.
 
-### Wildcard Patterns
+      --folders, -f
+        Show folders only, without files.
 
-    Put patterns in quotes to ensure that LSTree's non-standard wildcard pattern '**/' is correctly processed. By example:
-    "*.rogue"      # matches files in the current folder ending with ".rogue"
-    "**/*.rogue"   # matches files in subfolders or in the current folder.
-    "*/**/*.rogue" # matches files in subfolders but not in the current folder
+      --help, -h
+        Show this help text.
 
-Finally, `?` can be used to match any single character.
+      --hidden, -a
+        Show hidden files.
 
+      --no-sizes, -n
+        Do not show file sizes.
+
+    WILDCARD PATTERNS
+      Put patterns in quotes to ensure that LSTree's non-standard wildcard patterns
+      are correctly processed. By example:
+        "*.rogue"      # matches files in the current folder ending with ".rogue"
+        "**/*.rogue"   # matches files in subfolders or in the current folder.
+        "*/**/*.rogue" # matches files in subfolders but not in the current folder
+      Finally, '?' can be used to match any single character.

@@ -37,7 +37,6 @@ class LSTree
       local command = CommandLineParser().
       [
         option( "--depth=", &alias="-d" )
-        option( "--help",   &aliases=["-h","-?"] )
         option( "--exclude",
           function( parser:CommandLineParser )
             if (parser.arg.contains("="))
@@ -48,8 +47,9 @@ class LSTree
           endFunction
         )
         alias( "-x", "--exclude", &require_value )
+        option( "--help",   &aliases=["-h","-?"] )
         option( "--hidden", &alias="-a" )
-        option( "--no-sizes", &aliases=["--nosz","-n"] )
+        option( "--no-sizes", &alias="-n" )
         option( "--folders", &alias="-f" )
         on_unknown(
           function (parser:CommandLineParser) with (print_usage=(this=>print_usage))
@@ -115,9 +115,12 @@ class LSTree
       println AUTHOR
       println @|
                |USAGE
-               |  lst [options] [folder-path]
+               |  lst [OPTIONS] [folder-path]
                |
                |OPTIONS
+               |  -0, -1, -2, ...
+               |    Aliases for `--depth=0` ...
+               |
                |  --depth=<N>, -d <N>
                |    --depth=0 # No depth limitation (default)
                |    --depth=1 # Limit the listing to a single level
@@ -132,13 +135,13 @@ class LSTree
                |  --folders, -f
                |    Show folders only, without files.
                |
-               |  --help
+               |  --help, -h
                |    Show this help text.
                |
                |  --hidden, -a
                |    Show hidden files.
                |
-               |  --no-sizes, --nosz, -n
+               |  --no-sizes, -n
                |    Do not show file sizes.
                |
                |WILDCARD PATTERNS
