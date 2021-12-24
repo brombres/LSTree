@@ -240,11 +240,7 @@ routine rogo_publish( new_version="":String )
   if (not Console.input("Continue publishing? ").to_lowercase.begins_with('y')) return
 
   execute @|git push
-           |git checkout master
-           |git pull
-           |git merge develop
-           |git push
-           |git checkout develop
+
   execute "gh release create v"+new_version
 endRoutine
 
