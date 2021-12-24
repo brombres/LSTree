@@ -1,0 +1,14 @@
+class LstreePackage : Package
+  # Base class Package is defined here:
+  # https://github.com/AbePralle/Morlock/blob/main/Source/Package.rogue
+  PROPERTIES
+    name = "abepralle/lstree"
+
+  METHODS
+    method install
+      download
+      unpack
+      build
+      install_executable( &dest_filename="lst" )
+endClass
+
