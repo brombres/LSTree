@@ -2,8 +2,8 @@
 # LSTree.rogue
 # May 22, 2020
 #===============================================================================
-$define VERSION "1.3.0"
-$define DATE    "December 23, 2021 by Abe Pralle"
+$define VERSION "2.0"
+$define DATE    "September 9, 2022"
 
 $requireRogue "2.0.8"
 
