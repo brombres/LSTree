@@ -2,12 +2,12 @@
 # LSTree.rogue
 # May 22, 2020
 #===============================================================================
-$define VERSION "LSTree v1.3.0"
-$define AUTHOR "December 23, 2021 by Abe Pralle"
+$define VERSION "1.3.0"
+$define DATE    "December 23, 2021 by Abe Pralle"
 
-$requireRogue "1.11"
+$requireRogue "2.0.8"
 
-uses Utility/CommandLineParser
+uses Console/CommandLineParser
 
 $define INDENT 2
 
@@ -40,7 +40,8 @@ class LSTree
         option( "--exclude",
           function( parser:CommandLineParser )
             if (parser.arg.contains("="))
-              parser.command.ensure_list( "excluded" ).add( parser.arg.after_first('=') )
+              if (not parser.command//excluded) parser.command//excluded = @[]
+              parser.command//excluded.add( parser.arg.after_first('=') )
             else
               parser.cur_group = "excluded"
             endIf
@@ -83,7 +84,7 @@ class LSTree
       local exclude_patterns = command//excluded.to_list<<String>>
       args = command//args.to_list<<String>>
       forEach (arg in rewriter=args.rewriter)
-        rewriter.write( File.without_trailing_separator(arg) )
+        rewriter.write( File(arg).without_trailing_separator )
       endForEach
       ignore_hidden = not command//options//hidden->Logical
       show_sizes = not command//options["no-sizes"]->Logical
@@ -92,16 +93,16 @@ class LSTree
       if (args.is_empty) args.add( "." )
       local total_size : Int64
       forEach (filepath in args)
-        filepath = File.expand_path( filepath )
+        filepath = File( filepath ).resolved.filepath
 
         # Tailor the exclude patterns to fit the starting folder
         excluded.clear
         forEach (pattern in exclude_patterns)
-          excluded.add( File.ensure_ends_with_separator(filepath) + File.without_trailing_separator(pattern) )
+          excluded.add( File(filepath) / File(pattern).without_trailing_separator )
         endForEach
 
-        if (File.is_folder(filepath))
-          println File.absolute_filepath( filepath )
+        if (File(filepath).is_folder)
+          println File( filepath ).abs
           total_size += display( filepath, depth )
         else
           display( filepath, depth )
@@ -111,8 +112,8 @@ class LSTree
       if (show_sizes) println "($)" (byte_count_to_string(total_size))
 
     method print_usage
-      println "LSTree version " + VERSION
-      println AUTHOR
+      println "LSTree v$"(VERSION)
+      println "$ by Abe Pralle"(DATE)
       println @|
                |USAGE
                |  lst [OPTIONS] [folder-path]
@@ -157,20 +158,20 @@ class LSTree
 
       local listing = String[]
 
-      if (File.exists(folder) and not File.is_folder(folder))
-        listing.add( File.filename(folder) )
-        folder = File.folder( folder )
+      if (File(folder).exists and not File(folder).is_folder)
+        listing.add( File(folder).filename )
+        folder = File( folder ).folder
       else
         local pattern = ""
         while (folder.contains('*') or folder.contains('?'))
-          if (pattern.count) pattern = "$/$" (File.filename(folder),pattern)
-          else               pattern = File.filename( folder )
-          folder = File.folder( folder )
+          if (pattern.count) pattern = "$/$" (File(folder).filename,pattern)
+          else               pattern = File( folder ).filename
+          folder = File( folder ).folder
         endWhile
         if (folder == "") folder = "."
         if (pattern == "") pattern = "*"
 
-        listing = File.listing( folder, pattern, &=ignore_hidden, &omit_path )
+        listing = File( folder ).listing( pattern, &=ignore_hidden, &omit_path )
       endIf
 
       local max_len = 0
@@ -180,17 +181,19 @@ class LSTree
       forEach (filename in listing)
         local filepath = which{ folder.count:"$/$" (folder,filename) || filename }
         contingent
-          necessary (not File.matches_wildcard_pattern(filepath,forEach in excluded))
+          necessary (FilePattern(filepath) != (forEach in excluded))
 
-          if (File.is_folder(filepath))
+          if (File(filepath).is_folder)
             if (depth == 1)
               # At our depth limit
               print_hypen
-              print( filename ).print( "/" ).flush
+              print( filename )
+              print( "/" )
+              Global.flush
               if (not show_sizes) println; nextIteration
               loop (max_len - (filename.count+1)) print ' '
               local folder_size = display( filepath, -1 )
-              println (("[$]" (byte_count_to_string(folder_size))).right_justified(7))
+              println (("[$]" (byte_count_to_string(folder_size))).justified(7))
               total_size += folder_size
             elseIf (depth < 0)
               # Beyond our depth limit - collect sizes but don't print anything
@@ -199,7 +202,7 @@ class LSTree
               print_hypen
               println "$/" (filename)
               indent += INDENT
-              local folder_size = display( filepath, ?:{depth:depth-1||0} )
+              local folder_size = display( filepath, which{depth:depth-1||0} )
               if (show_sizes)
                 loop (indent-2) print ' '
                 println "($)" (byte_count_to_string(folder_size))
@@ -208,14 +211,14 @@ class LSTree
               total_size += folder_size
             endIf
           else
-            local size = File.size( filepath )
+            local size = File( filepath ).size
             total_size += size
             if (depth >= 0 and not show_folders_only)
               print_hypen
               print filename
               if (show_sizes)
                 loop (max_len - filename.count) print ' '
-                print (("[$]" (byte_count_to_string(size))).right_justified(7))
+                print (("[$]" (byte_count_to_string(size))).justified(7))
               endIf
               println
             endIf
