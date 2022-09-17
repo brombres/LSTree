@@ -181,7 +181,7 @@ class LSTree
       forEach (filename in listing)
         local filepath = which{ folder.count:"$/$" (folder,filename) || filename }
         contingent
-          necessary (FilePattern(filepath) != (forEach in excluded))
+          necessary (not FilePattern(forEach in excluded).matches(filepath))
 
           if (File(filepath).is_folder)
             if (depth == 1)
