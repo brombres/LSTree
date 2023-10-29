@@ -1,8 +1,8 @@
 class LstreePackage : Package
   # Base class Package is defined here:
-  # https://github.com/AbePralle/Morlock/blob/main/Source/Package.rogue
+  # https://github.com/brombres/Morlock/blob/main/Source/Package.rogue
   PROPERTIES
-    name = "abepralle/lstree"
+    name = "brombres/lstree"
 
   METHODS
     method install

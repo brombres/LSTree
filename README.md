@@ -7,12 +7,12 @@ Version   | 2.0.1
 Date      | September 16, 2022
 Platforms | macOS, Linux (Ubuntu+), Windows
 License   | [MIT License](LICENSE)
-Author    | Abe Pralle
+Author    | Brom Bresenham
 
 ## New Installation
 
 1. Install [morlock.sh](https://morlock.sh)
-2. `morlock install abepralle/lstree`
+2. `morlock install brombres/lstree`
 
 ## Updating Existing Installation
 `morlock update lstree`

@@ -113,7 +113,7 @@ class LSTree
 
     method print_usage
       println "LSTree v$"(VERSION)
-      println "$ by Abe Pralle"(DATE)
+      println "$ by Brom Bresenham"(DATE)
       println @|
                |USAGE
                |  lst [OPTIONS] [folder-path]
