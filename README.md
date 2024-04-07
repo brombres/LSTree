@@ -3,8 +3,8 @@ Command line folder listing with indented tree-style display.
 
 Summary   | Current Release
 ----------|-----------------------
-Version   | 2.1
-Date      | October 29, 2023
+Version   | 2.2
+Date      | April 7, 2024
 Platforms | macOS, Linux (Ubuntu+), Windows
 License   | [MIT License](LICENSE)
 Author    | Brom Bresenham
