@@ -3,7 +3,7 @@ Command line folder listing with indented tree-style display.
 
 Summary   | Current Release
 ----------|-----------------------
-Version   | 2.2
+Version   | 2.3
 Date      | March 19, 2025
 Platforms | macOS, Linux (Ubuntu+), Windows
 License   | [MIT License](LICENSE)
