@@ -4,7 +4,7 @@ Command line folder listing with indented tree-style display.
 Summary   | Current Release
 ----------|-----------------------
 Version   | 2.2
-Date      | April 7, 2024
+Date      | March 19, 2025
 Platforms | macOS, Linux (Ubuntu+), Windows
 License   | [MIT License](LICENSE)
 Author    | Brom Bresenham
